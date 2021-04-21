@@ -1,0 +1,12 @@
+default:
+  params:
+    scipen: 100
+    TZ: 'America/Buenos_Aires'
+    shiny_reactlog: FALSE
+    fullstacktrace: FALSE
+    future_max_size: 1e9
+
+local-test:
+  params:
+    shiny_reactlog: TRUE
+    fullstacktrace: TRUE

@@ -1,0 +1,5 @@
+Importante:
+
+1. la suma de aga conforman rs
+
+2. Podemos reclassificar diagnóstico de paciente como paciente no crónico (pcsm=0), paciente crónico no complejo (pcsm=1 y pccsm=0), paciente crónico complejo (pccsm=1)
