@@ -1,0 +1,23 @@
+Package: indicadores-salud-catalunia
+Title: Mockup de Indicadores de Salud en Cataluña
+Version: 0.0.0.9000
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports: 
+    config,
+    dplyr,
+    lubridate,
+    plotly,
+    readxl,
+    renv,
+    sever,
+    shiny,
+    shinydashboard,
+    shinydashboardPlus,
+    shinyjs,
+    shinyWidgets,
+    stringr,
+    tidyr,
+    usethis
