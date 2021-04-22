@@ -94,6 +94,67 @@ function(input, output, session) {
     
   })
   
+  output$tendencia_plot_2 <- renderPlotly({
+    
+    data <- tendencia_data()
+    
+    shiny::validate(
+      need(nrow(data) > 0, message = "Aún no hay data.")
+    )
+    
+    data_plot <- data %>%
+      group_by(any, rs_centre) %>%
+      summarise(
+        pacients = sum(pacients, na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      group_by(rs_centre) %>%
+      arrange(any) %>%
+      mutate(
+        base = round((pacients / first(pacients)) - 1, 2)
+      ) %>%
+      ungroup() %>%
+      select(-pacients) %>%
+      pivot_wider(names_from = "rs_centre", values_from = "base")
+    
+    p <- plotly::plot_ly(
+      data = data_plot,
+      x = ~ any
+    )
+    
+    data_plot %>% 
+      select(-c(any)) %>%
+      iwalk(.f = function(x, y) {
+        if (startsWith(y, prefix = "CATALUNYA") == TRUE) {
+          p <<- p %>% 
+            plotly::add_trace(
+              y = as.formula(glue::glue("~`{y}`")), 
+              name = y, 
+              line = list(color = "green"),
+              type = "scatter",  
+              mode = "lines"
+            )
+        } else {
+          p <<- p %>% 
+            plotly::add_trace(
+              y = as.formula(glue::glue("~`{y}`")), 
+              name = y,
+              line = list(color = "lightgray"),
+              type = "scatter",  
+              mode = "lines"
+            )
+        }
+      })
+    
+    p %>% 
+      layout(
+        xaxis = list(title = "Any", type = "category"),
+        yaxis = list(title = "Base 2016")
+      )
+    
+  })
+  
+  
   
 }
 
