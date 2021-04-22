@@ -11,7 +11,7 @@ paquetes <- list(
   "Shiny Core" = list("shiny", "shinydashboard"),
   "Shiny Extras" = list("shinydashboardPlus", "shinyjs", "fresh", "sever", "shinyWidgets"),
   "Graficos" = list("plotly"),
-  "Tidyverse" = list("dplyr", "tidyr", "purrr", "lubridate", "readxl", "stringr", "magrittr", "forcats")
+  "Tidyverse" = list("dplyr", "tidyr", "purrr", "lubridate", "readxl", "stringr", "magrittr", "forcats", "modelr")
 )
 
 lapply(as.list(c(paquetes, recursive = T, use.names = F)),
