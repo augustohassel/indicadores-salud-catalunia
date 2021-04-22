@@ -10,6 +10,7 @@ Imports:
     dplyr,
     forcats,
     lubridate,
+    modelr,
     plotly,
     readxl,
     renv,

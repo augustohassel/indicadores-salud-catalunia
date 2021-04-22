@@ -188,6 +188,8 @@ dashboardPage(
                     width = NULL, 
                     tabPanel(
                       title = "Evolución Anual"
+                      title = "Evolución Anual",
+                      plotlyOutput(outputId = "tendencia_plot_1", inline = TRUE)
                       ),
                     tabPanel(
                       title = "Base 2016"
