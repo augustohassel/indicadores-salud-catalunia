@@ -6,15 +6,6 @@ steps:
     - '-c'
     - |
       docker pull gcr.io/$PROJECT_ID/demo-salut:latest || exit 0
-- id: docker build
-  name: 'gcr.io/cloud-builders/docker'
-  entrypoint: 'bash'
-  args:
-    - '-c'
-    - |
-      docker build -t gcr.io/$PROJECT_ID/demo-salut \
-      --cache-from gcr.io/$PROJECT_ID/demo-salut:latest
-      .
 - id: docker push
   name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/$PROJECT_ID/demo-salut']
