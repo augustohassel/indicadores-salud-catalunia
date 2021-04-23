@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  shiny:
+    container_name: demo-salut
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    user: root
+    ports:
+      - '8080:8080'
+    
