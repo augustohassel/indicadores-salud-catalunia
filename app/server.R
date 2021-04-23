@@ -94,6 +94,8 @@ function(input, output, session) {
     
   })
   
+  # * 2 - Base 2016 --------------------
+  
   output$tendencia_plot_2 <- renderPlotly({
     
     data <- tendencia_data()
@@ -154,6 +156,48 @@ function(input, output, session) {
     
   })
   
+  # * 3 - Violin Plot --------------------
+  
+  output$tendencia_plot_3 <- renderPlotly({
+    
+    data <- tendencia_data()
+    
+    shiny::validate(
+      need(nrow(data) > 0, message = "Aún no hay data.")
+    )
+    
+    data_plot <- data %>%
+      group_by(any, centre) %>%
+      summarise(
+        visitas = round(sum(visites, na.rm = TRUE) / sum(pacients, na.rm = TRUE), 2), 
+        .groups = "drop"
+      ) %>%
+      ggplot() +
+      geom_jitter(
+        aes(
+          x = any, 
+          y = visitas, 
+          text = glue::glue("Centro: {centre}")
+          ), 
+        colour = "grey"
+        ) +
+      geom_line(
+        data = data_referencia_tendencia_plot_3, 
+        aes(
+          x = any, 
+          y = visitas, 
+          text = glue::glue("CATALUNYA CENTRAL")
+          ), 
+        colour = "orange", 
+        size = 0.7, 
+        inherit.aes = FALSE
+        ) +
+      theme_minimal() +
+      scale_x_continuous(breaks = unique(activitat_centre$any))
+    
+    ggplotly(data_plot)
+    
+  })
   
   
 }

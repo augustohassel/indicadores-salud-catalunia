@@ -202,7 +202,8 @@ dashboardPage(
                     title = "Visites per persona atesa", 
                     width = NULL, 
                     tabPanel(
-                      title = "Violin Plot"
+                      title = "Jitter Plot",
+                      plotlyOutput(outputId = "tendencia_plot_3", inline = TRUE)
                     ),
                     tabPanel(
                       title = "BoxPlot"

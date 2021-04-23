@@ -88,6 +88,13 @@ options_tendencia_filter_diagnostico <- activitat_centre %>%
   pull() %>%
   as.character()
 
+data_referencia_tendencia_plot_3 <- activitat_centre %>%
+  filter(id_rs_centre == 67) %>%
+  group_by(any) %>%
+  summarise(
+    visitas = round(mean(visites/pacients, na.rm = TRUE), 2)
+  )
+
 
 # 5. Modules --------------------------------------------------------------
 
