@@ -156,7 +156,7 @@ function(input, output, session) {
     
   })
   
-  # * 3 - Violin Plot --------------------
+  # * 3 - Jitter Plot --------------------
   
   output$tendencia_plot_3 <- renderPlotly({
     
