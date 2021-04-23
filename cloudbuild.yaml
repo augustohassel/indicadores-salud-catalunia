@@ -31,7 +31,7 @@ steps:
   - --platform
   - managed
   - --memory
-  - 512Mi
+  - 1Gi
   - --cpu
   - '1'
   - --max-instances
