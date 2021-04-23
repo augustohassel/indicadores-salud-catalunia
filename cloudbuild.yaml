@@ -36,6 +36,7 @@ steps:
   - '1'
   - --max-instances
   - '1'
+  - --allow-unauthenticated
 
 images:
 - gcr.io/$PROJECT_ID/demo-salut
