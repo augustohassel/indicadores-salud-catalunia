@@ -10,9 +10,7 @@ function(input, output, session) {
   
   sever(html = sever_default(title = "Ups...", subtitle = "Se desconectó la sesión.", button = "Reconectar"))
   
-  # 1 - Tendencia --------------------
-  
-  # * 1 - Evolución Anual --------------------
+  # 1. Tendencia --------------------
   
   tendencia_data <- reactive({
     
@@ -29,6 +27,8 @@ function(input, output, session) {
     return(data)
     
   })
+  
+  # * 1. Evolución Anual --------------------
   
   output$tendencia_plot_1 <- renderPlotly({
     
@@ -94,7 +94,7 @@ function(input, output, session) {
     
   })
   
-  # * 2 - Base 2016 --------------------
+  # * 2. Base 2016 --------------------
   
   output$tendencia_plot_2 <- renderPlotly({
     
@@ -156,7 +156,7 @@ function(input, output, session) {
     
   })
   
-  # * 3 - Jitter Plot --------------------
+  # * 3. Jitter Plot --------------------
   
   output$tendencia_plot_3 <- renderPlotly({
     
@@ -199,45 +199,172 @@ function(input, output, session) {
     
   })
   
+  # 2. Territorio --------------------
+  
+  observeEvent(input$territorio_filter_rs,{
+    
+    opciones <- relaciones_territorio %>%
+      filter(id_rs == input$territorio_filter_rs) %>%
+      distinct(id_aga, aga) %>%
+      arrange(aga) %>% {
+        setNames(object = .$id_aga, nm = .$aga)
+      }
+    
+    updatePickerInput(
+      session = session, 
+      inputId = "territorio_filter_aga", 
+      choices = opciones, 
+      clearOptions = TRUE
+      )
+    
+  })
+  
+  observeEvent(input$territorio_filter_clear, {
+    updateRadioGroupButtons(
+      session = session, 
+      inputId = "territorio_filter_tipus_centre", 
+      selected = "Adults"
+      )
+    updateSliderInput(
+      session = session, 
+      inputId = "territorio_filter_anio", 
+      value = 2016
+      )
+    updatePickerInput(
+      session = session, 
+      inputId = "territorio_filter_rs",
+      selected = NA, 
+      clearOptions = TRUE
+    )
+    updatePickerInput(
+      session = session, 
+      inputId = "territorio_filter_aga",
+      selected = NA, 
+      clearOptions = TRUE
+    )
+    updateCheckboxGroupButtons(
+      session = session, 
+      inputId = "territorio_filter_sexe", 
+      selected = c(0L, 1L)
+      )
+    updatePickerInput(
+      session = session, 
+      inputId = "territorio_filter_grup_edat", 
+      selected = options_territorio_filter_grup_edat
+      )
+  })
+  
+  territorio_data <- reactive({
+    
+    data <- activitat_territori %>%
+      filter(tipus_centre == input$territorio_filter_tipus_centre) %>% {
+        data <- .
+        if (input$territorio_filter_rs == "") {
+          data
+        } else {
+          data %>%
+            filter(id_rs == input$territorio_filter_rs)
+        }
+      } %>% {
+        data <- .
+        if (is_null(input$territorio_filter_aga) == TRUE) {
+          data
+        } else {
+          data %>%
+            filter(id_aga %in% input$territorio_filter_aga)
+        }
+      } %>%
+      filter(sexe %in% input$territorio_filter_sexe) %>%
+      filter(grup_edat %in% input$territorio_filter_grup_edat) %>%
+      filter(Any == input$territorio_filter_anio)
+    
+    return(data)
+    
+  })
+  
+  
+  
+  # * 1. Mapa --------------------
+  
+  territorio_data_map <- eventReactive(
+    list(
+      input$territorio_indicador,
+      input$territorio_filter_make_plot
+      ), {
+        
+        progressSweetAlert(
+          session = session, 
+          id = "progress_territorio_data_map", 
+          title = tagList("Calculando indicador...", loadingState()), 
+          display_pct = T, 
+          value = 0, 
+          striped = T, 
+          status = "primary"
+        )
+        
+        data_filtrada <- territorio_data()
+        
+        data_indicador <- if (input$territorio_indicador == 1) {
+          data_filtrada %>%
+            left_join(
+              poblacio_territori %>%
+                select(Any, id_aga, sexe, grup_edat, poblacio), 
+              by = c("id_aga" = "id_aga", "Any" = "Any", "sexe" = "sexe", "grup_edat" = "grup_edat")) %>%
+            filter(!is.na(poblacio)) %>%
+            group_by(
+              id_aga
+            ) %>%
+            summarise(
+              Indicador = round(sum(pacients/poblacio) * 100, 2)
+            )
+            
+        }
+        
+        data <- data_territorio_map@data %>%
+          left_join(
+            data_indicador, 
+            by = c("CODIAGA" = "id_aga")
+            ) 
+        
+        updateProgressBar(
+          session = session, 
+          id = "progress_territorio_data_map", 
+          value = 100, 
+          status = "success"
+          )
+        Sys.sleep(0.5)
+        closeSweetAlert(session = session)
+        
+        return(data)
+        
+  })
+  
+  
+  output$territorio_map <- renderLeaflet({
+    
+    pal <- colorBin(palette = "Spectral", domain = territorio_data_map()$Indicador)
+    
+    leaflet(data_territorio_map) %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      addPolygons(
+        color = "444444",
+        opacity = 1,
+        fillOpacity = 0.5,
+        fillColor = ~pal(territorio_data_map()$Indicador),
+        highlightOptions = highlightOptions(
+          color = "white",
+          weight = 2,
+          bringToFront = TRUE
+        ),
+        label = ~glue::glue("{aga}: {formatC(territorio_data_map()$Indicador, big.mark = \",\")}%")
+        ) %>%
+      addLegend(
+        position = "bottomright",
+        pal = pal,
+        values = territorio_data_map()$Indicador
+        )
+      
+  })
+  
   
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
