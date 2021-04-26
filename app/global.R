@@ -11,7 +11,8 @@ paquetes <- list(
   "Shiny Core" = list("shiny", "shinydashboard"),
   "Shiny Extras" = list("shinydashboardPlus", "shinyjs", "fresh", "sever", "shinyWidgets"),
   "Graficos" = list("plotly"),
-  "Tidyverse" = list("dplyr", "tidyr", "purrr", "lubridate", "readxl", "stringr", "magrittr", "forcats", "modelr")
+  "Tidyverse" = list("dplyr", "tidyr", "purrr", "lubridate", "readxl", "stringr", "magrittr", "forcats", "modelr"),
+  "Map" = list("leaflet", "rgdal")
 )
 
 lapply(as.list(c(paquetes, recursive = T, use.names = F)),
@@ -48,12 +49,15 @@ rm(list = c("data_nombres"))
 
 # 5. Organizo la data -----------------------------------------------------
 
+# * 1. Activitat Centre ---------------------------------------------------
+
 activitat_centre <- activitat_centre %>%
   rename(
     id_rs_centre = `id_rs_centre...4`,
     rs_centre = `id_rs_centre...5`
   ) %>%
   mutate(
+    across(.cols = c("sexe", "nivell_socioeconomic_baix", "Nou_pacient"), .fns = as.integer),
     grup_edat = forcats::fct_relevel(
       .f = grup_edat, 
       c("<6", "6-12", "13-17", "18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75+")
@@ -95,34 +99,85 @@ data_referencia_tendencia_plot_3 <- activitat_centre %>%
     visitas = round(mean(visites/pacients, na.rm = TRUE), 2)
   )
 
+# 2. Activitat Territori --------------------------------------------------
+
+activitat_territori <- activitat_territori %>%
+  mutate(
+    id_rs_new = case_when(
+      Any == 2019 ~ id_aga,
+      TRUE ~ id_rs
+    ),
+    rs_new = case_when(
+      Any == 2019 ~ aga,
+      TRUE ~ rs
+    ),
+    id_aga_new = case_when(
+      Any == 2019 ~ id_rs,
+      TRUE ~ id_aga
+    ),
+    aga_new = case_when(
+      Any == 2019 ~ rs,
+      TRUE ~ aga
+    ),
+    across(.cols = c("sexe", "nivell_socioeconomic_baix", "Nou_pacient"), .fns = as.integer),
+  ) %>%
+  select(-c(id_rs, rs, id_aga, aga)) %>%
+  rename(
+    id_rs  = id_rs_new,
+    rs     = rs_new,
+    id_aga = id_aga_new,
+    aga    = aga_new
+  ) %>%
+  filter(grup_edat != "#N/D") %>%
+  mutate(
+    across(.cols = c("id_rs"), .fns = as.integer),
+    grup_edat = forcats::fct_relevel(
+      .f = grup_edat, 
+      c("<6", "6-12", "13-17", "18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75+")
+    ),
+    tipus_centre = case_when(
+      as.integer(grup_edat) < 4 ~ 'Infantil',
+      TRUE ~ 'Adults'
+    )
+    ) %>% 
+  filter(!is.na(id_rs))
+
+
+relaciones_territorio <- activitat_territori %>%
+  select(id_rs, rs, id_aga, aga) %>%
+  distinct()
+
+options_territorio_filter_rs <- relaciones_territorio %>%
+  distinct(id_rs, rs) %>%
+  arrange(rs) %>% {
+    setNames(object = .$id_rs, nm = .$rs)
+  }
+
+options_territorio_filter_grup_edat <- activitat_territori %>% 
+  distinct(grup_edat) %>% 
+  arrange(grup_edat) %>%
+  pull() %>%
+  as.character()
+
+data_territorio_map <- readOGR("data/AGA_202005")
+data_territorio_map <- spTransform(data_territorio_map, CRS("+proj=longlat +datum=WGS84"))
+
+data_territorio_map@data <- data_territorio_map@data %>%
+  left_join(
+    relaciones_territorio %>% 
+      select(id_aga, aga),
+    by = c("CODIAGA" = "id_aga")
+    )
+
+poblacio_territori <- poblacio_territori %>%
+  mutate(
+    sexe = as.integer(sexe),
+    grup_edat = forcats::fct_relevel(
+      .f = grup_edat, 
+      c("<6", "6-12", "13-17", "18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75+")
+    )
+  )
 
 # 5. Modules --------------------------------------------------------------
 
 invisible(lapply(list.files(path = "modules", full.names = T), source))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
