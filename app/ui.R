@@ -365,7 +365,11 @@ dashboardPage(
                     )
                   )
               )
-      ) # cierra el tab
+      ), # cierra el tab
+      
+      tabItem(tabName = "centros",
+              div("Próximamente...", loadingState(), style = "text-align: -webkit-center;")
+      )  # cierra el tab
       
     ) # cierre tab items
   )# cierra el body del dashboard
