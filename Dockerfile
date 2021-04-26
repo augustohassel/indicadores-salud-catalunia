@@ -3,7 +3,11 @@ FROM rocker/shiny:4.0.3
 # librerias extra
 RUN apt-get update && apt-get install -y \
     telnet \
-    libssl-dev
+    libssl-dev \
+    gdal-bin \
+    proj-bin \
+    libgdal-dev \
+    libproj-dev
 
 # control de versionado de R
 ENV RENV_VERSION 0.13.2
